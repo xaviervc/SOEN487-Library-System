@@ -4,37 +4,74 @@
  * and open the template in the editor.
  */
 package soen487.library.system;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import soen487.library.core.Book;
 
 /**
  *
- * @author Xavier Vani-Charron
+ * @author Xavier Vani-Charron, Ryan Taylor
  */
+
+//TODO: Should we accept Book objects as arguments or the parameters themselves?
 public class Library {
     
     private ConcurrentHashMap bookList = null;
-    private Book book = null;
+    private static final AtomicInteger sequence = new AtomicInteger(0);
 
     public Library(){
         if(bookList == null){
-            bookList = new ConcurrentHashMap();
+            bookList = new ConcurrentHashMap<Long,Book>();
         }
     }
     
+    //Probably dont need this considering two ids may be the same depending on what the last id was for the paramter hashmap
     public Library(ConcurrentHashMap bookList) {
         this.bookList = bookList;
     }
     
-    public void createBook(){
-        
+    public void create(Book newBook){
+	sequence.incrementAndGet();
+        newBook.setId(sequence.longValue());
+	bookList.put(newBook.getId(), newBook);
+	
     }
     
-    public void addBook(){
-        
+    //Will be null if id not present in bookList, otherwise will return the book.
+    public Object delete(Long id){
+	
+	return bookList.remove(id);
     }
     
-    private void incrementId(){
-        
+    //TODO:Should we add a book if not in the hashmap? This implementation does not. 
+    public void update(Book updatedBook){
+	
+	Long id = updatedBook.getId();
+	if(bookList.containsKey(id))
+	    bookList.put(id, updatedBook);
+	//Uncomment for creating a new book if it does not exist
+	/*else{
+	    this.create(updatedBook)
+	}
+	*/
+	
     }
+    
+    //If id is null return all the books, otherwise return matching book or empty ArrayList if not present
+    public ArrayList<Book> read(Long id){
+	ArrayList<Book> result = new ArrayList<>();
+	
+	if(id == null){
+	    result.addAll(bookList.values());
+	}
+	else{
+	    if(bookList.containsKey(id))
+		result.add((Book)bookList.get(id));
+	    
+	}
+	return result;
+    }
+    
 }
