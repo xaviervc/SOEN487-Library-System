@@ -5,7 +5,6 @@
  */
 package soen487.library.system;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import soen487.library.core.Book;
@@ -17,14 +16,19 @@ import soen487.library.core.Book;
 
 //TODO: Should we accept Book objects as arguments or the parameters themselves?
 public class Library {
-    
-    private ConcurrentHashMap bookList = null;
+    private static Library library_instance = null;
+    private static ConcurrentHashMap bookList = null;
     private static final AtomicInteger sequence = new AtomicInteger(0);
 
-    public Library(){
-        if(bookList == null){
-            bookList = new ConcurrentHashMap<Long,Book>();
+    private Library(){
+        bookList = new ConcurrentHashMap();
+    }
+    
+    public static Library getInstance(){
+        if(library_instance == null){
+            library_instance = new Library();
         }
+        return library_instance;
     }
     
     //Probably dont need this considering two ids may be the same depending on what the last id was for the paramter hashmap
@@ -32,16 +36,17 @@ public class Library {
         this.bookList = bookList;
     }
     
-    public void create(Book newBook){
+    public void create(String description, String title, String isbn, String author, String publisher){
+        
+        Book newBook = new Book(title, description, Integer.parseInt(isbn), author, publisher);
 	sequence.incrementAndGet();
         newBook.setId(sequence.longValue());
 	bookList.put(newBook.getId(), newBook);
-	
+        
     }
     
     //Will be null if id not present in bookList, otherwise will return the book.
     public Object delete(Long id){
-	
 	return bookList.remove(id);
     }
     
@@ -61,6 +66,7 @@ public class Library {
     
     //If id is null return all the books, otherwise return matching book or empty ArrayList if not present
     public ArrayList<Book> read(Long id){
+        
 	ArrayList<Book> result = new ArrayList<>();
 	
 	if(id == null){
@@ -69,9 +75,7 @@ public class Library {
 	else{
 	    if(bookList.containsKey(id))
 		result.add((Book)bookList.get(id));
-	    
 	}
 	return result;
     }
-    
 }
